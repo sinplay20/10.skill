@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mathdoc:indexed:1.0",
+  "title": "Index-based mathematical document; adapted from the accepted id + Original model",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "item": {
+      "type": "object",
+      "properties": {
+        "Original": {
+          "type": "object",
+          "properties": {
+            "indexing": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "document": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "section": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "page": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "document"
+                  ],
+                  "additionalProperties": false
+                },
+                "identifier": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "location",
+                "identifier"
+              ],
+              "additionalProperties": false
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "definition",
+                    "notation",
+                    "axiom",
+                    "assumption",
+                    "theorem",
+                    "proposition",
+                    "lemma",
+                    "corollary",
+                    "conjecture",
+                    "example",
+                    "remark",
+                    "exercise",
+                    "problem",
+                    "statement"
+                  ]
+                },
+                "body": {
+                  "type": "string"
+                },
+                "proof": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "body",
+                "proof"
+              ],
+              "additionalProperties": false
+            },
+            "relations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "depends_on",
+                      "implies",
+                      "equivalent_to",
+                      "special_case_of",
+                      "example_of",
+                      "counterexample_to",
+                      "related_to"
+                    ]
+                  },
+                  "target": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "basis": {
+                    "enum": [
+                      "explicit",
+                      "inferred"
+                    ]
+                  },
+                  "explanation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "target",
+                  "basis"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "indexing",
+            "content",
+            "relations"
+          ],
+          "additionalProperties": false
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "index",
+        "Original"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "format": {
+      "const": "math-document-indexed"
+    },
+    "format_version": {
+      "const": "1.0"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "title",
+        "authors",
+        "edition",
+        "kind",
+        "sha256",
+        "metadata_verified",
+        "synthetic",
+        "complete",
+        "processed_pages"
+      ],
+      "properties": {
+        "document": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "edition": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "latex",
+            "text_pdf",
+            "scan_pdf"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "metadata_verified": {
+          "type": "boolean"
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "processed_pages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "total_pages": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "project_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "actor",
+        "notes"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "draft",
+            "agent_checked",
+            "human_checked"
+          ]
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "reading_order": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "part"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "part": {
+            "enum": [
+              "body",
+              "proof"
+            ]
+          },
+          "page": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "format",
+    "format_version",
+    "source",
+    "review",
+    "items",
+    "reading_order",
+    "unresolved",
+    "anchors"
+  ]
+}

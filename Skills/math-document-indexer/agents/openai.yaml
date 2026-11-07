@@ -1,0 +1,6 @@
+interface:
+  display_name: "数学文献工作台"
+  short_description: "按 index 分拆数学文献，阅读并查看关系图谱"
+  default_prompt: "用 $math-document-indexer 处理这份数学文献，生成 index JSON，校验并打开阅读与知识图谱工作台。"
+policy:
+  allow_implicit_invocation: true

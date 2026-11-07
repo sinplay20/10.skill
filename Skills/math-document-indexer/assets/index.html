@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>数学文献工作台</title>
+  <link rel="stylesheet" href="/assets/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script defer src="/assets/vendor/katex/katex.min.js"></script>
+  <script defer src="/assets/vendor/katex/contrib/auto-render.min.js"></script>
+  <script defer src="/assets/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">∑</span><div><strong>数学文献工作台</strong><span>READ · CONNECT · REVIEW</span></div></div>
+    <div class="top-actions"><button id="sourceBtn">原文对照</button><button id="agentBtn">复制 Agent 任务</button><button id="openBtn">载入 JSON</button><button id="exportBtn">导出 JSON</button><button id="submitBtn" class="primary">仓库提交包 <span>↗</span></button></div>
+    <input id="fileInput" type="file" accept=".json,application/json" hidden>
+  </header>
+  <main class="workspace">
+    <aside class="sidebar">
+      <div class="eyebrow">DOCUMENT MAP</div><h2>文献结构</h2>
+      <label class="searchbox"><span>⌕</span><input id="search" placeholder="搜索陈述、证明或编号" autocomplete="off"></label>
+      <div class="section-label">条目类型 <button id="clearFilters">重置</button></div>
+      <nav id="typeFilters" aria-label="条目类型"></nav>
+      <div class="section-label outline-label">原文目录 <span id="outlineCount"></span></div>
+      <nav id="outline" aria-label="原文目录"></nav>
+      <div class="sidebar-note"><span class="local-dot"></span>本地工作区<div>文献与 JSON 在本机处理。<br>条目以 index 编号，生成阶段不分配 UUID。</div></div>
+    </aside>
+    <section class="reader-panel">
+      <div class="reader-toolbar"><span><span class="tiny-square"></span>按原文顺序阅读</span><div><button id="jsonBtn" class="text-button">查看／编辑 JSON</button><button id="saveBtn" class="text-button">保存到工作区</button></div></div>
+      <div id="readerScroll" class="reader-scroll">
+        <div class="document-heading"><div class="document-meta" id="docMeta"></div><h1 id="docTitle">正在载入文献…</h1><p id="docSubtitle"></p><div id="docStats" class="doc-stats"></div></div>
+        <div id="scopeBanner" class="scope-banner"></div>
+        <div id="items"></div><button id="moreBtn" class="load-more" hidden>继续加载原文</button>
+        <div class="reader-end">— 原文顺序由 reading_order 保存 —</div>
+      </div>
+    </section>
+    <section class="graph-panel">
+      <div class="graph-heading"><div><span class="eyebrow">KNOWLEDGE GRAPH</span><h2>关系图谱 <span id="graphCount"></span></h2></div><button id="fitBtn" title="适应视图">⤢</button></div>
+      <div class="graph-tools"><label><input type="checkbox" id="focusToggle"> 仅看选中条目的关联</label><button id="labelsBtn" class="text-button">显示关系名</button></div>
+      <div id="graphArea" class="graph-area"><svg id="graph" role="img" aria-label="数学条目关系图"></svg><div class="graph-hint">拖动节点／空白区域 · 滚轮缩放</div></div>
+      <div class="graph-legend"><span><i class="solid-line"></i> 原文明确</span><span><i class="dashed-line"></i> 分析推断</span><span class="legend-help">同一条目只有一个节点</span></div>
+      <div id="selection" class="selection-panel"></div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="jsonDialog"><div class="dialog-heading"><div><span class="eyebrow">INDEXED DOCUMENT</span><h2>文档 JSON</h2></div><button id="closeJson">×</button></div><p>修改后会先核对结构。数学内容和关系依据仍需对照原文审阅。</p><textarea id="jsonEditor" spellcheck="false" aria-label="文档 JSON"></textarea><div class="dialog-actions"><span id="jsonError" role="alert"></span><button id="applyJson" class="primary">校验并载入</button></div></dialog>
+  <dialog id="sourceDialog"><div class="dialog-heading"><div><span class="eyebrow">SOURCE DOCUMENT</span><h2>原文对照</h2></div><button id="closeSource">×</button></div><div id="sourceContent"></div></dialog>
+</body>
+</html>

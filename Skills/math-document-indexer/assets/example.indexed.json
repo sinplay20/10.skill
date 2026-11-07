@@ -1,0 +1,497 @@
+{
+  "format": "math-document-indexed",
+  "format_version": "1.0",
+  "source": {
+    "document": "sources/files/even-integers-demo.tex",
+    "title": "Even integers and parity",
+    "authors": [],
+    "edition": "fictional-demo-1",
+    "kind": "latex",
+    "sha256": "0d8e468401d0457a4b26e8ef8c43717ccf5ea904b25b02e92e0bebc7f6a537fe",
+    "metadata_verified": true,
+    "synthetic": true,
+    "complete": true,
+    "processed_pages": []
+  },
+  "review": {
+    "status": "agent_checked",
+    "actor": "example-author",
+    "notes": [
+      "虚构演示文献，不是 Han–Lin 或其他真实书籍的转录。",
+      "阅读顺序展示：Theorem 1 陈述位于第 2 页，证明位于第 5 页。",
+      "关系图不保证已覆盖全部隐含假设或符号作用域。"
+    ]
+  },
+  "items": [
+    {
+      "index": 1,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "1"
+          },
+          "identifier": ""
+        },
+        "content": {
+          "type": "statement",
+          "body": "Throughout this note, all variables range over the integers.",
+          "proof": ""
+        },
+        "relations": []
+      }
+    },
+    {
+      "index": 2,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "1"
+          },
+          "identifier": "Definition 1"
+        },
+        "content": {
+          "type": "definition",
+          "body": "An integer $n$ is even if there exists $k\\in\\mathbb{Z}$ such that $n=2k$.",
+          "proof": ""
+        },
+        "relations": []
+      }
+    },
+    {
+      "index": 3,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "1"
+          },
+          "identifier": "Definition 2"
+        },
+        "content": {
+          "type": "definition",
+          "body": "An integer $n$ is odd if there exists $k\\in\\mathbb{Z}$ such that $n=2k+1$.",
+          "proof": ""
+        },
+        "relations": []
+      }
+    },
+    {
+      "index": 4,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "2"
+          },
+          "identifier": "Theorem 1"
+        },
+        "content": {
+          "type": "theorem",
+          "body": "If $a$ and $b$ are even, then $a+b$ is even.",
+          "proof": "By Definition 1, there exist $m,n\\in\\mathbb{Z}$ with $a=2m$ and $b=2n$.\n\nThus $a+b=2(m+n)$. Since $m+n\\in\\mathbb{Z}$, Definition 1 gives the conclusion."
+        },
+        "relations": [
+          {
+            "type": "depends_on",
+            "target": 2,
+            "basis": "explicit",
+            "explanation": "The proof invokes Definition 1."
+          },
+          {
+            "type": "equivalent_to",
+            "target": 5,
+            "basis": "inferred",
+            "explanation": "Closure under addition restates the theorem; the text does not assert the equivalence explicitly."
+          }
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "2"
+          },
+          "identifier": ""
+        },
+        "content": {
+          "type": "statement",
+          "body": "Thus the set of even integers is closed under addition.",
+          "proof": ""
+        },
+        "relations": []
+      }
+    },
+    {
+      "index": 6,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "2"
+          },
+          "identifier": "Lemma 1"
+        },
+        "content": {
+          "type": "lemma",
+          "body": "If $a$ is even, then $-a$ is even.",
+          "proof": "By Definition 1, write $a=2m$. Then $-a=2(-m)$ and $-m\\in\\mathbb{Z}$."
+        },
+        "relations": [
+          {
+            "type": "depends_on",
+            "target": 2,
+            "basis": "explicit",
+            "explanation": "The proof invokes Definition 1."
+          }
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "3"
+          },
+          "identifier": "Proposition 1"
+        },
+        "content": {
+          "type": "proposition",
+          "body": "If $a$ is even and $b\\in\\mathbb{Z}$, then $ab$ is even.",
+          "proof": "By Definition 1, $a=2m$ for some integer $m$. Hence $ab=2(mb)$, so the product is even."
+        },
+        "relations": [
+          {
+            "type": "depends_on",
+            "target": 2,
+            "basis": "explicit",
+            "explanation": "The proof invokes Definition 1."
+          }
+        ]
+      }
+    },
+    {
+      "index": 8,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "3"
+          },
+          "identifier": "Theorem 2"
+        },
+        "content": {
+          "type": "theorem",
+          "body": "The sum of two odd integers is even.",
+          "proof": "By Definition 2, write $a=2m+1$ and $b=2n+1$. Then $a+b=2(m+n+1)$, which is even by Definition 1."
+        },
+        "relations": [
+          {
+            "type": "depends_on",
+            "target": 2,
+            "basis": "explicit",
+            "explanation": "The proof invokes Definition 1."
+          },
+          {
+            "type": "depends_on",
+            "target": 3,
+            "basis": "explicit",
+            "explanation": "The proof invokes Definition 2."
+          }
+        ]
+      }
+    },
+    {
+      "index": 9,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "4"
+          },
+          "identifier": "Corollary 1"
+        },
+        "content": {
+          "type": "corollary",
+          "body": "Every finite sum of even integers is even.",
+          "proof": "Apply Theorem 1 inductively to the summands. The empty sum is $0=2\\cdot 0$."
+        },
+        "relations": [
+          {
+            "type": "depends_on",
+            "target": 4,
+            "basis": "explicit",
+            "explanation": "The proof invokes Theorem 1."
+          }
+        ]
+      }
+    },
+    {
+      "index": 10,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "4"
+          },
+          "identifier": "Example 1"
+        },
+        "content": {
+          "type": "example",
+          "body": "As an instance of Theorem 1, $2+4=6$ is even.",
+          "proof": ""
+        },
+        "relations": [
+          {
+            "type": "example_of",
+            "target": 4,
+            "basis": "explicit",
+            "explanation": "The source says this is an instance of Theorem 1."
+          }
+        ]
+      }
+    },
+    {
+      "index": 11,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "4"
+          },
+          "identifier": "Remark 1"
+        },
+        "content": {
+          "type": "remark",
+          "body": "Even integers are precisely the integer multiples of $2$.",
+          "proof": ""
+        },
+        "relations": [
+          {
+            "type": "related_to",
+            "target": 2,
+            "basis": "inferred",
+            "explanation": "Both characterize multiples of 2."
+          }
+        ]
+      }
+    },
+    {
+      "index": 12,
+      "Original": {
+        "indexing": {
+          "location": {
+            "document": "sources/files/even-integers-demo.tex",
+            "section": [
+              "Even integers and parity"
+            ],
+            "page": "4"
+          },
+          "identifier": "Problem 1"
+        },
+        "content": {
+          "type": "problem",
+          "body": "Prove that the product of two odd integers is odd.",
+          "proof": ""
+        },
+        "relations": [
+          {
+            "type": "related_to",
+            "target": 3,
+            "basis": "inferred",
+            "explanation": "The problem uses the defined notion of odd integer."
+          }
+        ]
+      }
+    }
+  ],
+  "reading_order": [
+    {
+      "index": 1,
+      "part": "body",
+      "page": "1"
+    },
+    {
+      "index": 2,
+      "part": "body",
+      "page": "1"
+    },
+    {
+      "index": 3,
+      "part": "body",
+      "page": "1"
+    },
+    {
+      "index": 4,
+      "part": "body",
+      "page": "2"
+    },
+    {
+      "index": 5,
+      "part": "body",
+      "page": "2"
+    },
+    {
+      "index": 6,
+      "part": "body",
+      "page": "2"
+    },
+    {
+      "index": 6,
+      "part": "proof",
+      "page": "2"
+    },
+    {
+      "index": 7,
+      "part": "body",
+      "page": "3"
+    },
+    {
+      "index": 7,
+      "part": "proof",
+      "page": "3"
+    },
+    {
+      "index": 8,
+      "part": "body",
+      "page": "3"
+    },
+    {
+      "index": 8,
+      "part": "proof",
+      "page": "3"
+    },
+    {
+      "index": 9,
+      "part": "body",
+      "page": "4"
+    },
+    {
+      "index": 9,
+      "part": "proof",
+      "page": "4"
+    },
+    {
+      "index": 10,
+      "part": "body",
+      "page": "4"
+    },
+    {
+      "index": 11,
+      "part": "body",
+      "page": "4"
+    },
+    {
+      "index": 12,
+      "part": "body",
+      "page": "4"
+    },
+    {
+      "index": 4,
+      "part": "proof",
+      "page": "5"
+    }
+  ],
+  "unresolved": [],
+  "anchors": [
+    {
+      "index": 2,
+      "labels": [
+        "def:even"
+      ]
+    },
+    {
+      "index": 3,
+      "labels": [
+        "def:odd"
+      ]
+    },
+    {
+      "index": 4,
+      "labels": [
+        "thm:add"
+      ]
+    },
+    {
+      "index": 6,
+      "labels": [
+        "lem:negative"
+      ]
+    },
+    {
+      "index": 7,
+      "labels": [
+        "prop:product"
+      ]
+    },
+    {
+      "index": 8,
+      "labels": [
+        "thm:odd-sum"
+      ]
+    },
+    {
+      "index": 9,
+      "labels": [
+        "cor:finite"
+      ]
+    },
+    {
+      "index": 10,
+      "labels": [
+        "ex:add"
+      ]
+    },
+    {
+      "index": 11,
+      "labels": [
+        "rem:multiples"
+      ]
+    },
+    {
+      "index": 12,
+      "labels": [
+        "problem:odd-product"
+      ]
+    }
+  ]
+}

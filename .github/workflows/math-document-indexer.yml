@@ -1,0 +1,37 @@
+name: Validate math document skill
+
+on:
+  push:
+    paths:
+      - 'Skills/math-document-indexer/**'
+      - 'Skills/packages/math-document-indexer-*.zip'
+      - '.github/workflows/math-document-indexer.yml'
+  pull_request:
+    paths:
+      - 'Skills/math-document-indexer/**'
+      - 'Skills/packages/math-document-indexer-*.zip'
+      - '.github/workflows/math-document-indexer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: Skills/math-document-indexer/requirements.txt
+      - run: python -m pip install -r Skills/math-document-indexer/requirements.txt
+      - run: python -m unittest discover -s Skills/math-document-indexer/tests -v

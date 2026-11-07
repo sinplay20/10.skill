@@ -1,0 +1,147 @@
+\documentclass{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+
+\newtheorem{definition}{Definition}
+
+\newtheorem{theorem}{Theorem}
+
+\newtheorem{lemma}{Lemma}
+
+\newtheorem{proposition}{Proposition}
+
+\newtheorem{corollary}{Corollary}
+
+\newtheorem{example}{Example}
+
+\newtheorem{remark}{Remark}
+
+\newtheorem{problem}{Problem}
+
+\begin{document}
+
+Throughout this note, all variables range over the integers.
+
+\begin{definition}
+
+\label{def:even}
+
+An integer $n$ is even if there exists $k\in\mathbb{Z}$ such that $n=2k$.
+
+\end{definition}
+
+\begin{definition}
+
+\label{def:odd}
+
+An integer $n$ is odd if there exists $k\in\mathbb{Z}$ such that $n=2k+1$.
+
+\end{definition}
+
+\newpage
+
+\begin{theorem}
+
+\label{thm:add}
+
+If $a$ and $b$ are even, then $a+b$ is even.
+
+\end{theorem}
+
+Thus the set of even integers is closed under addition.
+
+\begin{lemma}
+
+\label{lem:negative}
+
+If $a$ is even, then $-a$ is even.
+
+\end{lemma}
+
+\begin{proof}
+
+By Definition 1, write $a=2m$. Then $-a=2(-m)$ and $-m\in\mathbb{Z}$.
+
+\end{proof}
+
+\newpage
+
+\begin{proposition}
+
+\label{prop:product}
+
+If $a$ is even and $b\in\mathbb{Z}$, then $ab$ is even.
+
+\end{proposition}
+
+\begin{proof}
+
+By Definition 1, $a=2m$ for some integer $m$. Hence $ab=2(mb)$, so the product is even.
+
+\end{proof}
+
+\begin{theorem}
+
+\label{thm:odd-sum}
+
+The sum of two odd integers is even.
+
+\end{theorem}
+
+\begin{proof}
+
+By Definition 2, write $a=2m+1$ and $b=2n+1$. Then $a+b=2(m+n+1)$, which is even by Definition 1.
+
+\end{proof}
+
+\newpage
+
+\begin{corollary}
+
+\label{cor:finite}
+
+Every finite sum of even integers is even.
+
+\end{corollary}
+
+\begin{proof}
+
+Apply Theorem 1 inductively to the summands. The empty sum is $0=2\cdot 0$.
+
+\end{proof}
+
+\begin{example}
+
+\label{ex:add}
+
+As an instance of Theorem 1, $2+4=6$ is even.
+
+\end{example}
+
+\begin{remark}
+
+\label{rem:multiples}
+
+Even integers are precisely the integer multiples of $2$.
+
+\end{remark}
+
+\begin{problem}
+
+\label{problem:odd-product}
+
+Prove that the product of two odd integers is odd.
+
+\end{problem}
+
+\newpage
+
+\begin{proof}[Proof of Theorem~\ref{thm:add}]
+
+By Definition 1, there exist $m,n\in\mathbb{Z}$ with $a=2m$ and $b=2n$.
+
+Thus $a+b=2(m+n)$. Since $m+n\in\mathbb{Z}$, Definition 1 gives the conclusion.
+
+\end{proof}
+
+\end{document}
