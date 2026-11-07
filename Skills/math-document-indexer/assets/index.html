@@ -12,10 +12,19 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-mark">∑</span><div><strong>数学文献工作台</strong><span>READ · CONNECT · REVIEW</span></div></div>
-    <div class="top-actions"><button id="sourceBtn">原文对照</button><button id="agentBtn">复制 Agent 任务</button><button id="openBtn">载入 JSON</button><button id="exportBtn">导出 JSON</button><button id="submitBtn" class="primary">仓库提交包 <span>↗</span></button></div>
+    <div class="top-actions"><button id="uploadBtn" class="primary">上传文献</button><button id="libraryBtn">文献库</button><button id="sourceBtn">原文对照</button><button id="agentBtn">复制 Agent 任务</button><button id="openBtn">载入 JSON</button><button id="exportBtn">导出 JSON</button><button id="submitBtn">仓库提交包 <span>↗</span></button></div>
     <input id="fileInput" type="file" accept=".json,application/json" hidden>
   </header>
-  <main class="workspace">
+  <section id="welcome" class="welcome" hidden>
+    <div class="welcome-intro"><span class="eyebrow">FROM DOCUMENT TO KNOWLEDGE</span><h1>从一篇文献开始</h1><p>保留数学的原文与推演脉络，让每个条目和关系都有出处。</p></div>
+    <div class="welcome-cards">
+      <button id="welcomeUpload" class="welcome-card"><span class="card-icon">↥</span><h2>上传数学文献</h2><p>选择或拖入 PDF／TeX，提取材料并生成可审阅的条目初稿。</p><strong>上传文献 →</strong></button>
+      <button id="welcomeJson" class="welcome-card"><span class="card-icon">{ }</span><h2>导入条目 JSON</h2><p>继续阅读已经拆分的文献，检查正文、证明与关系图谱。</p><strong>选择 JSON →</strong></button>
+      <button id="welcomeLibrary" class="welcome-card"><span class="card-icon">▤</span><h2>本地文献库</h2><p>上传和导入的文献保存在工作区，可随时切换、继续核对。</p><strong>打开文献库 →</strong></button>
+    </div>
+    <p class="welcome-note">上传文件保存在本机。结构初稿生成后，由 Agent 对照原文核对数学内容与关系。</p>
+  </section>
+  <main id="workspace" class="workspace">
     <aside class="sidebar">
       <div class="eyebrow">DOCUMENT MAP</div><h2>文献结构</h2>
       <label class="searchbox"><span>⌕</span><input id="search" placeholder="搜索陈述、证明或编号" autocomplete="off"></label>
@@ -29,7 +38,7 @@
       <div class="reader-toolbar"><span><span class="tiny-square"></span>按原文顺序阅读</span><div><button id="jsonBtn" class="text-button">查看／编辑 JSON</button><button id="saveBtn" class="text-button">保存到工作区</button></div></div>
       <div id="readerScroll" class="reader-scroll">
         <div class="document-heading"><div class="document-meta" id="docMeta"></div><h1 id="docTitle">正在载入文献…</h1><p id="docSubtitle"></p><div id="docStats" class="doc-stats"></div></div>
-        <div id="scopeBanner" class="scope-banner"></div>
+        <div id="scopeBanner" class="scope-banner"></div><div class="review-action"><button id="agentReviewBtn">复制 Agent 核对任务</button><span>粘贴到 Agent 对话中，核对后网页自动刷新</span><button id="sourceReviewBtn">查看原文</button></div>
         <div id="items"></div><button id="moreBtn" class="load-more" hidden>继续加载原文</button>
         <div class="reader-end">— 原文顺序由 reading_order 保存 —</div>
       </div>
@@ -42,6 +51,17 @@
       <div id="selection" class="selection-panel"></div>
     </section>
   </main>
+  <dialog id="uploadDialog">
+    <div class="dialog-heading"><div><span class="eyebrow">IMPORT A DOCUMENT</span><h2>上传数学文献</h2></div><button id="closeUpload" aria-label="关闭上传">×</button></div>
+    <p>选择文献 → 生成结构初稿 → 打开阅读与图谱</p>
+    <button id="dropZone" class="drop-zone"><span class="upload-symbol">↥</span><strong id="uploadFileName">点击选择或拖拽文献到这里</strong><span>PDF 或 UTF-8 TeX · 最大 100 MiB</span></button>
+    <input id="sourceFileInput" type="file" accept=".pdf,.tex" hidden>
+    <div class="upload-options"><label>PDF 物理页范围<input id="uploadPages" placeholder="留空处理全部；例如 1-20,25" autocomplete="off"></label><label class="render-option"><input type="checkbox" id="uploadRender">生成页面图片，供扫描页／公式核对</label></div>
+    <p class="upload-help">TeX 多文件项目请让 Agent 按本地路径处理。初稿不会自动判定数学依赖；扫描页会保留待视觉识别项。</p>
+    <progress id="uploadProgress" hidden></progress><div id="uploadStatus" class="upload-status" role="status" aria-live="polite"></div>
+    <div class="dialog-actions"><span>原文件和结果保存在本地工作区</span><div><button id="openUploaded" hidden>打开初稿 →</button><button id="uploadSubmit" class="primary" disabled>生成结构初稿</button></div></div>
+  </dialog>
+  <dialog id="libraryDialog"><div class="dialog-heading"><div><span class="eyebrow">YOUR LOCAL LIBRARY</span><h2>本地文献库</h2></div><button id="closeLibrary" aria-label="关闭文献库">×</button></div><p>文档自动保存到工作区，Agent 的修改会在打开后刷新显示。</p><div id="libraryList"></div></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <dialog id="jsonDialog"><div class="dialog-heading"><div><span class="eyebrow">INDEXED DOCUMENT</span><h2>文档 JSON</h2></div><button id="closeJson">×</button></div><p>修改后会先核对结构。数学内容和关系依据仍需对照原文审阅。</p><textarea id="jsonEditor" spellcheck="false" aria-label="文档 JSON"></textarea><div class="dialog-actions"><span id="jsonError" role="alert"></span><button id="applyJson" class="primary">校验并载入</button></div></dialog>
   <dialog id="sourceDialog"><div class="dialog-heading"><div><span class="eyebrow">SOURCE DOCUMENT</span><h2>原文对照</h2></div><button id="closeSource">×</button></div><div id="sourceContent"></div></dialog>

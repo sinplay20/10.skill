@@ -60,7 +60,9 @@
     }
     if(seen.size!==expected.size||bodies.some((value,i)=>value!==i+1))throw Error('阅读顺序未完整覆盖条目，或 index 不是正文首次出现顺序');
   }
+  function documentControls(enabled) {for(const id of ['sourceBtn','agentBtn','exportBtn','submitBtn','jsonBtn','saveBtn'])$(id).disabled=!enabled;}
   function load(data,{dirty=false}={}) {
+    $('welcome').hidden=true;$('workspace').hidden=false;documentControls(true);
     basicValidate(data); state.doc=data; state.dirty=dirty; state.limit=100;
     if(!get(state.selected))state.selected=data.items[0]?.index||null;
     state.fingerprint=JSON.stringify(data);
@@ -178,7 +180,7 @@
   function applyTransform(){const t=state.transform;state.graphGroup?.setAttribute('transform',`translate(${t.x},${t.y}) scale(${t.k})`);}
   function fitGraph(){if(!state.nodes.length)return;const w=$('graphArea').clientWidth,h=$('graphArea').clientHeight;const minX=Math.min(...state.nodes.map(n=>n.x))-65,maxX=Math.max(...state.nodes.map(n=>n.x))+65,minY=Math.min(...state.nodes.map(n=>n.y))-50,maxY=Math.max(...state.nodes.map(n=>n.y))+55;const k=Math.min(1.3,(w-25)/(maxX-minX),(h-50)/(maxY-minY));state.transform={k,x:(w-(maxX-minX)*k)/2-minX*k,y:(h-(maxY-minY)*k)/2-minY*k};applyTransform();}
   function download(data,name,type='application/json'){const url=URL.createObjectURL(new Blob([data],{type})),a=el('a',{href:url,download:name});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-  async function post(route,data){const response=await fetch(route,{method:'POST',headers:{'Content-Type':'application/json',...(state.etag?{'If-Match':state.etag}:{})},body:JSON.stringify(data)});if(!response.ok){let message='请求未完成';try{message=(await response.json()).error||message;}catch{}throw Error(message);}return response;}
+  async function post(route,data){const response=await fetch(route,{method:'POST',headers:{'Content-Type':'application/json','X-Mathdoc-Token':state.info?.token||'',...(state.etag?{'If-Match':state.etag}:{})},body:JSON.stringify(data)});if(!response.ok){let message='请求未完成';try{message=(await response.json()).error||message;}catch{}throw Error(message);}return response;}
   $('search').addEventListener('input',event=>{state.query=event.target.value.trim().toLocaleLowerCase();state.limit=100;renderReader();drawGraph();});
   $('clearFilters').onclick=()=>{state.filter='all';state.query='';$('search').value='';state.limit=100;renderFilters();renderReader();drawGraph();};
   $('moreBtn').onclick=()=>{state.limit+=100;renderReader();};
@@ -186,7 +188,7 @@
   $('fitBtn').onclick=fitGraph;
   $('labelsBtn').onclick=()=>{state.showLabels=!state.showLabels;$('labelsBtn').textContent=state.showLabels?'隐藏关系名':'显示关系名';for(const edge of state.edges)edge.label.style.display=state.showLabels?'':'none';};
   $('openBtn').onclick=()=>$('fileInput').click();
-  $('fileInput').onchange=async event=>{const file=event.target.files[0];if(!file)return;try{load(JSON.parse(await file.text()),{dirty:true});toast('文档已载入；可导出或保存到当前工作区。');}catch(error){toast(error.message);}event.target.value='';};
+  $('fileInput').onchange=async event=>{const file=event.target.files[0];if(!file)return;try{if(!allowSwitch())return;const data=JSON.parse(await file.text());basicValidate(data);const result=await (await post('/api/import-json',data)).json();await activate(result.key,false);toast('JSON 已导入并保存到本地文献库。');}catch(error){toast(error.message);}finally{event.target.value='';}};
   $('exportBtn').onclick=()=>download(JSON.stringify(state.doc,null,2)+'\n','document.indexed.json');
   $('saveBtn').onclick=async()=>{try{const response=await post('/api/save',state.doc);state.etag=response.headers.get('ETag');state.dirty=false;state.fingerprint=JSON.stringify(state.doc);renderHeader();toast('已校验并保存到本地工作区。');}catch(error){toast(error.message);}};
   $('submitBtn').onclick=async()=>{try{$('submitBtn').disabled=true;const response=await post('/api/submission',state.doc);download(await response.blob(),'mathdoc-submission.zip','application/zip');toast('已导出仓库待导入包：包含 index JSON 与实际结构校验记录。');}catch(error){toast(error.message);}finally{$('submitBtn').disabled=false;}};
@@ -195,17 +197,73 @@
   $('applyJson').onclick=()=>{try{load(JSON.parse($('jsonEditor').value),{dirty:true});$('jsonDialog').close();toast('改动已载入；保存或导出前将再次校验。');}catch(error){$('jsonError').textContent=error.message;}};
   $('sourceBtn').onclick=async()=>{if(!state.info?.source_available){toast('当前没有关联原文件；启动 view 时可用 --source 指定 PDF／TeX。');return;}if(state.info.source_sha256&&state.info.source_sha256!==state.doc.source.sha256){toast('当前 JSON 与关联原文件的 SHA-256 不一致，请用 --source 关联正确文献。');return;}try{$('sourceContent').replaceChildren();if(state.info.source_path.toLowerCase().endsWith('.pdf'))$('sourceContent').append(el('iframe',{src:'/source',title:'来源 PDF'}));else $('sourceContent').append(el('pre',{},await (await fetch('/source')).text()));$('sourceDialog').showModal();}catch(error){toast(error.message);}};
   $('closeSource').onclick=()=>$('sourceDialog').close();
-  $('agentBtn').onclick=async()=>{const info=state.info;const text=`使用 math-document-indexer skill：${info?.skill_path||''}\n对照来源：${info?.source_path||state.doc.source.document}\n核对并完善 index 文档：${info?.document_path||'document.indexed.json'}\n保持 id + Original 的 Original 结构，条目标识使用 index；证明附属于条目，reading_order 保留原文位置。核对类型、原文编号和 explicit/inferred 关系，不编造缺失内容。完成后运行 validate 并刷新网页。需要提交仓库时先导出待导入稿；正式入库使用独立 plan-import 步骤。`;
+  $('agentBtn').onclick=async()=>{const info=state.info;const text=`使用 math-document-indexer skill：${info?.skill_path||''}\n对照来源：${info?.source_path||state.doc.source.document}\n核对并完善 index 文档：${info?.document_path||'document.indexed.json'}\n处理材料位于该文档同目录的 prepared/（若存在）\n保持 id + Original 的 Original 结构，条目标识使用 index；证明附属于条目，reading_order 保留原文位置。核对类型、原文编号和 explicit/inferred 关系，不编造缺失内容。完成后运行 validate 并刷新网页。需要提交仓库时先导出待导入稿；正式入库使用独立 plan-import 步骤。`;
     try{await navigator.clipboard.writeText(text);toast('Agent 任务已复制，粘贴到当前 Agent 对话即可。');}catch{toast('剪贴板不可用；请按 SKILL.md 中的流程处理。');}
   };
+  $('agentReviewBtn').onclick=()=>$('agentBtn').click();
+  $('sourceReviewBtn').onclick=()=>$('sourceBtn').click();
   let pan=null;
   $('graph').addEventListener('pointerdown',event=>{if(event.target.closest('.graph-node'))return;pan={x:event.clientX,y:event.clientY,tx:state.transform.x,ty:state.transform.y};$('graph').setPointerCapture(event.pointerId);});
   $('graph').addEventListener('pointermove',event=>{if(!pan)return;state.userMoved=true;state.transform.x=pan.tx+event.clientX-pan.x;state.transform.y=pan.ty+event.clientY-pan.y;applyTransform();});
   $('graph').addEventListener('pointerup',()=>{pan=null;});
   $('graph').addEventListener('wheel',event=>{event.preventDefault();const rect=$('graph').getBoundingClientRect(),t=state.transform,x=event.clientX-rect.left,y=event.clientY-rect.top,k=Math.max(.15,Math.min(4,t.k*Math.exp(-event.deltaY*.0015)));state.transform={k,x:x-(x-t.x)*k/t.k,y:y-(y-t.y)*k/t.k};state.userMoved=true;applyTransform();},{passive:false});
   let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(state.doc)drawGraph();},200);});
-  async function refresh(){try{const response=await fetch('/api/document');if(!response.ok)throw Error((await response.json()).error);const data=await response.json(),fingerprint=JSON.stringify(data);if(!state.doc){state.etag=response.headers.get('ETag');load(data);}else if(fingerprint!==state.fingerprint&&!state.dirty){state.etag=response.headers.get('ETag');load(data);toast('已载入 Agent 更新后的文档。');}}catch(error){if(!state.doc){$('docTitle').textContent='文档载入失败';$('scopeBanner').textContent=error.message;toast(error.message);}}}
-  fetch('/api/info').then(r=>r.json()).then(info=>{state.info=info;}).catch(()=>{});
-  refresh();setInterval(refresh,4500);
+  function allowSwitch(){return !state.dirty||window.confirm('当前有未保存的改动。确定切换文献并放弃这些改动吗？');}
+  async function activate(key,ask=true){
+    if(ask&&!allowSwitch())return;
+    state.switching=true;
+    try{
+      state.info=await (await post('/api/activate',{key})).json();
+      const response=await fetch('/api/document');if(!response.ok)throw Error((await response.json()).error);
+      state.etag=response.headers.get('ETag');state.filter='all';state.query='';$('search').value='';state.positions.clear();state.selected=null;
+      load(await response.json());$('libraryDialog').close();$('uploadDialog').close();
+    }finally{state.switching=false;}
+  }
+  async function refresh(){if(state.switching)return;try{
+    const response=await fetch('/api/document');if(!response.ok)throw Error((await response.json()).error);
+    const data=await response.json();if(state.switching)return;
+    if(data===null){if(!state.doc){$('welcome').hidden=false;$('workspace').hidden=true;documentControls(false);}return;}
+    const fingerprint=JSON.stringify(data);
+    if(!state.doc||((fingerprint!==state.fingerprint||response.headers.get('ETag')!==state.etag)&&!state.dirty)){
+      state.info=await (await fetch('/api/info')).json();state.etag=response.headers.get('ETag');load(data);
+    }
+  }catch(error){toast(error.message);}}
+  async function openLibrary(){
+    $('libraryList').replaceChildren(el('p',{},'正在读取文献库…'));$('libraryDialog').showModal();
+    try{const list=await (await fetch('/api/library')).json();$('libraryList').replaceChildren(...(list.length?list.map(record=>el('button',{class:'library-item',onclick:()=>activate(record.key).catch(error=>toast(error.message))},el('div',{},el('strong',{},record.title),el('span',{},`${record.items} 个条目 · ${{draft:'结构初稿',agent_checked:'Agent 已核对',human_checked:'人工已核对',unavailable:'文件不可读'}[record.status]||record.status}`)),el('span',{},record.active?'当前文献':'打开 →'))):[el('div',{class:'empty'},'还没有文献。上传 PDF／TeX，或导入已有 JSON。')]));}catch(error){$('libraryList').textContent=error.message;}
+  }
+  let uploadFile=null,uploadBusy=false,uploadedKey=null;
+  function pickSource(file){
+    if(uploadBusy)return;
+    uploadedKey=null;$('openUploaded').hidden=true;
+    if(!file||!/[.](pdf|tex)$/i.test(file.name)||!file.size||file.size>100*1024*1024){uploadFile=null;$('uploadSubmit').disabled=true;$('uploadStatus').textContent='请选择不超过 100 MiB 的 PDF 或 TeX 文件。';return;}
+    uploadFile=file;$('uploadFileName').textContent=file.name;$('uploadSubmit').disabled=false;$('uploadStatus').textContent=`已选择 ${(file.size/1024).toFixed(1)} KiB 的文献`;
+    $('uploadPages').disabled=/[.]tex$/i.test(file.name);$('uploadRender').disabled=$('uploadPages').disabled;
+  }
+  $('uploadBtn').onclick=()=>$('uploadDialog').showModal();$('welcomeUpload').onclick=$('uploadBtn').onclick;
+  $('libraryBtn').onclick=openLibrary;$('welcomeLibrary').onclick=openLibrary;
+  $('welcomeJson').onclick=()=>$('fileInput').click();
+  $('closeUpload').onclick=()=>$('uploadDialog').close();$('closeLibrary').onclick=()=>$('libraryDialog').close();
+  $('dropZone').onclick=()=>$('sourceFileInput').click();$('sourceFileInput').onchange=event=>{pickSource(event.target.files[0]);event.target.value='';};
+  for(const name of ['dragenter','dragover'])$('dropZone').addEventListener(name,event=>{event.preventDefault();$('dropZone').classList.add('dragging');});
+  for(const name of ['dragleave','drop'])$('dropZone').addEventListener(name,event=>{event.preventDefault();$('dropZone').classList.remove('dragging');if(name==='drop')pickSource(event.dataTransfer.files[0]);});
+  $('openUploaded').onclick=()=>activate(uploadedKey).catch(error=>toast(error.message));
+  $('uploadSubmit').onclick=async()=>{
+    if(!uploadFile||uploadBusy)return;uploadBusy=true;$('uploadSubmit').disabled=true;$('dropZone').disabled=true;$('uploadProgress').hidden=false;$('openUploaded').hidden=true;
+    try{
+      $('uploadStatus').textContent='正在上传到本地工作区…';
+      const params=new URLSearchParams({pages:$('uploadPages').disabled?'':$('uploadPages').value.trim(),render:!$('uploadRender').disabled&&$('uploadRender').checked?'1':'0'});
+      const response=await fetch('/api/upload?'+params,{method:'POST',headers:{'Content-Type':'application/octet-stream','X-File-Name':encodeURIComponent(uploadFile.name),'X-Mathdoc-Token':state.info?.token||''},body:uploadFile});
+      const job=await response.json();if(!response.ok)throw Error(job.error||'上传失败');
+      let result;
+      do{await new Promise(resolve=>setTimeout(resolve,600));result=await (await fetch('/api/job?key='+encodeURIComponent(job.key))).json();$('uploadStatus').textContent=result.message;}while(result.status==='processing');
+      if(result.status!=='completed')throw Error(result.message);
+      uploadedKey=job.key;$('uploadStatus').textContent=`已保存到文献库：${result.items} 个初稿条目，${result.unresolved} 项待处理。打开后可复制 Agent 任务，继续核对原文与关系。`;$('openUploaded').hidden=false;
+    }catch(error){$('uploadStatus').textContent=error.message;}
+    finally{uploadBusy=false;$('uploadSubmit').disabled=!uploadFile;$('dropZone').disabled=false;$('uploadProgress').hidden=true;}
+  };
+  documentControls(false);
+  fetch('/api/info').then(r=>r.json()).then(info=>{state.info=info;return refresh();}).catch(error=>toast(error.message));
+  setInterval(refresh,4500);
   window.mathdocWorkbench={getDocument:()=>structuredClone(state.doc),select,validate:basicValidate};
 })();

@@ -392,74 +392,10 @@ def plan_import(doc, repo, source_file, provided=None):
     return {"batch": batch, "index_uuid_map": mapping, "checks": {"valid": True, "repository_written": False}}
 
 
-def serve(document, port=8765, source=None):
-    document = Path(document).resolve()
-    source = Path(source).resolve() if source else None
-    assets = SKILL / "assets"
-    class Handler(BaseHTTPRequestHandler):
-        def log_message(self, *_):
-            pass
-
-        def send(self, data, mime="application/json; charset=utf-8", status=200, filename=None, etag=None):
-            self.send_response(status)
-            self.send_header("Content-Type", mime)
-            self.send_header("Content-Length", str(len(data)))
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("X-Content-Type-Options", "nosniff")
-            if etag:
-                self.send_header("ETag", etag)
-            if filename:
-                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
-            self.end_headers()
-            self.wfile.write(data)
-
-        def do_GET(self):
-            try:
-                route = unquote(urlparse(self.path).path)
-                if route == "/api/document":
-                    data = read(document)
-                    validate(data)
-                    return self.send(dumps(data), etag=hashlib.sha256(dumps(data)).hexdigest())
-                if route == "/api/info":
-                    return self.send(dumps({"document_path": str(document), "source_path": str(source) if source else None, "source_sha256": sha(source) if source and source.is_file() else None, "skill_path": str(SKILL), "source_available": bool(source and source.is_file())}))
-                if route == "/source" and source and source.is_file():
-                    return self.send(source.read_bytes(), "application/pdf" if source.suffix.lower() == ".pdf" else "text/plain; charset=utf-8")
-                target = assets / ("index.html" if route == "/" else route.removeprefix("/assets/"))
-                target = target.resolve()
-                if not target.is_relative_to(assets.resolve()) or not target.is_file() or (route != "/" and not route.startswith("/assets/")):
-                    return self.send(b"Not found", "text/plain", 404)
-                return self.send(target.read_bytes(), mimetypes.guess_type(target)[0] or "application/octet-stream")
-            except (DocumentError, OSError) as error:
-                self.send(dumps({"error": str(error)}), status=400)
-
-        def do_POST(self):
-            try:
-                origin = self.headers.get("Origin")
-                expected = f"http://{self.headers.get('Host')}"
-                if origin and origin != expected:
-                    return self.send(b"Origin rejected", "text/plain", 403)
-                size = int(self.headers.get("Content-Length", 0))
-                if not 0 < size <= 30 * 1024 * 1024:
-                    raise DocumentError("JSON 大小必须在 0..30 MiB 以内")
-                data = loads(self.rfile.read(size).decode("utf-8"))
-                validate(data)
-                if self.path == "/api/save":
-                    current = hashlib.sha256(dumps(read(document))).hexdigest()
-                    if self.headers.get("If-Match") != current:
-                        return self.send(dumps({"error": "工作区文档已有更新，请刷新并核对差异后再保存。"}), status=409)
-                    atomic(document, dumps(data))
-                    return self.send(dumps({"saved": True}), etag=hashlib.sha256(dumps(data)).hexdigest())
-                if self.path == "/api/submission":
-                    archive = io.BytesIO()
-                    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as handle:
-                        for name, content in submission_files(data).items():
-                            handle.writestr(name, content)
-                    return self.send(archive.getvalue(), "application/zip", filename="mathdoc-submission.zip")
-                self.send(b"Not found", "text/plain", 404)
-            except (DocumentError, OSError, ValueError) as error:
-                self.send(dumps({"error": str(error)}), status=400)
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(json.dumps({"url": f"http://127.0.0.1:{server.server_port}", "document": str(document)}, ensure_ascii=True), flush=True)
+def serve(document=None, port=8765, source=None, workspace=None):
+    from workbench import create_server
+    server = create_server(document, port, source, workspace)
+    print(json.dumps({"url": f"http://127.0.0.1:{server.server_port}", "workspace": str(server.workspace.root)}, ensure_ascii=True), flush=True)
     try:
         server.serve_forever()
     finally:
@@ -493,7 +429,8 @@ def main(argv=None):
     p.add_argument("--source-id")
     p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("view")
-    p.add_argument("document", type=Path)
+    p.add_argument("document", type=Path, nargs="?")
+    p.add_argument("--workspace", type=Path)
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--source", type=Path)
     args = parser.parse_args(argv)
@@ -520,8 +457,9 @@ def main(argv=None):
             atomic(args.out.with_suffix(".index-map.json"), dumps(result["index_uuid_map"]))
             result = {"batch": str(args.out), "mapping": str(args.out.with_suffix('.index-map.json')), "repository_written": False}
         else:
-            validate(read(args.document))
-            serve(args.document, args.port, args.source)
+            if args.document:
+                validate(read(args.document))
+            serve(args.document, args.port, args.source, args.workspace)
             return 0
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0

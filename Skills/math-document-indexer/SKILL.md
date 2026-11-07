@@ -33,6 +33,14 @@ description: "把数学论文或书籍的 PDF／LaTeX 分拆为使用整数 inde
 
 完成后运行 `validate <候选.json>`。核对真实来源元数据及 source.sha256，更新 review.actor 和实际审阅说明；只有确实对照核对后才标记 agent_checked，不能代称人工审阅。虚构演示保持 synthetic=true。结构检查不证明数学命题正确，也不表示 Lean 验证。
 
+## 网页上传入口
+
+用户想从网页选文献时，运行 `view --workspace <独立工作目录> --port 8765`，可在没有 JSON 的情况下打开首页。上传单文件 PDF／UTF-8 TeX 后，后台执行 prepare／draft，保留 draft 状态；页面完成提示中的“打开初稿”会进入阅读与图谱。PDF 可指定物理页范围并勾选页面渲染。
+
+工作区内的 documents/<内部文献键>/ 包含原文件、prepared/ 与 document.indexed.json；workspace.json 保存文献库和当前选择。重启使用相同工作区。网页上传只保存在本机，不执行 Git 上传。TeX 多文件项目使用已有本地 prepare 流程，避免丢失包含文件。
+
+用户从网页复制核对任务后，读取任务中的原文与 JSON，按本技能执行语义核对；不要把上传生成的结构初稿自动视为 Agent 已核对。网页会刷新 Agent 保存后的结果。
+
 ## 网页审阅与交付
 
 运行 `view <候选.json> --source <原文件> --port 8765`，使用返回的本地 URL。网页按原文位置展示正文与证明，可搜索／按类型筛选、点击关系和图谱节点相互定位、缩放拖动图谱、查看关系依据，并显示 LaTeX 公式。Agent 更新文件后网页会自动刷新；浏览器编辑有待保存改动时保留本地编辑。
