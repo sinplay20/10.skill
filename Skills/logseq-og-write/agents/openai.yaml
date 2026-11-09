@@ -1,0 +1,3 @@
+interface:
+  display_name: "Logseq OG 数学写入"
+  short_description: "按已核验规范写入数学研究、论文、书籍与概念，保留块身份、版本与依赖"
